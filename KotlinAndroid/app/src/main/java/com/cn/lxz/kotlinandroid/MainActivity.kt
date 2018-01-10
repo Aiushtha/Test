@@ -7,12 +7,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import io.reactivex.Observer
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
-import org.lxz.utils.http.AsHttp
-import org.lxz.utils.log.D
 
 @SuppressLint("Registered")
 /**

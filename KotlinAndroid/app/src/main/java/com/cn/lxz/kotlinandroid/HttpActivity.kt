@@ -12,16 +12,19 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_http.*
 import okhttp3.Response
-import org.lxz.utils.http.*
+import com.lxz.kotlin.tools.http.*
 import retrofit2.http.GET
 import retrofit2.http.Query
-import com.lxz.kotlin.tools.lang.asJsonFromat
 import com.lxz.kotlin.tools.android.idsOnClick
 import com.lxz.kotlin.tools.android.toast
+import com.lxz.kotlin.tools.lang.asJsonFromat
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import okhttp3.Cache
+import okhttp3.CacheControl
+import okhttp3.Interceptor
 import java.io.File
+
 
 /**
  * Created by linxingzhu on 2017/11/7.
@@ -61,69 +64,63 @@ class HttpActivity : AppCompatActivity(), View.OnClickListener {
                 /**从jsonPath根节点开始解析 $.data 表示从数据的data路径开始解析*/
 //              .setJsonPath("$.")
                 .setShowLog(true)
-                .setHttpLog(AsHttpFactory.LogListen { log ->
+                .setHttpLog({
+                    log->
                     tv_msg.post {
                         tv_msg.append("==========网络请求日志=======\n")
-                        tv_msg.append(log.message.toString().asJsonFromat());
-                        tv_msg.append("==========请求结果==========\n")
-                    }
+                        tv_msg.append(log.getMessage().asJsonFromat());
+                        tv_msg.append("==========请求结果==========\n") }
                 })
-                .setClientBuild(AsHttpFactory.ClientBuilder {
+                .setClientBuild({
                     build ->
-                        //cache的作用是指定缓存文件地址、大小
-                        build.cache(Cache(File( application.getExternalCacheDir(),"test_cache"),10 * 1024 * 1024));
+                    //cache的作用是指定缓存文件地址、大小
+                    build.cache(Cache(File( application.getExternalCacheDir(),"test_cache"),10 * 1024 * 1024));
+                })
+                //有网无网全局缓存策略 见http://www.jianshu.com/p/5cd7e95c2f29
+                .addInterceptor(Interceptor {
+                    chain ->
+                    var request=chain.request();
+                    var maxAge = 10;
+                    if (isNetworkConnected(application)) {
+                        var response:Response = chain.proceed(request);
+                        // read from cache for 0 s  有网络不会使用缓存数据
+                        var cacheControl = request.cacheControl().toString();
+                        response.newBuilder()
+                                .removeHeader("Pragma")
+                                .removeHeader("Cache-Control")
+                                .header("Cache-Control", "public, max-age=" + maxAge)
+                                .build();
+                    } else {
+                        //无网络时强制使用缓存数据
+                        request.newBuilder()
+                                .cacheControl(CacheControl.FORCE_CACHE)
+                                .build();
+                        var response:Response = chain.proceed(request);
+                        var maxStale = 60 * 60 * 24 * 3;
+                        response.newBuilder()
+                                .removeHeader("Pragma")
+                                .removeHeader("Cache-Control")
+                                .header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale)
+                                .build();
+
+
+                    }
 
                 })
-//                //有网无网全局缓存策略 见http://www.jianshu.com/p/5cd7e95c2f29
-//                .addInterceptor(Interceptor {
-//                    chain ->
-//                     var request=chain.request();
-//                     var maxAge = 10;
-//                       if (isNetworkConnected(application)) {
-//                        var response:Response = chain.proceed(request);
-//                        // read from cache for 0 s  有网络不会使用缓存数据
-//                        var cacheControl = request.cacheControl().toString();
-//                           response.newBuilder()
-//                                .removeHeader("Pragma")
-//                                .removeHeader("Cache-Control")
-//                                .header("Cache-Control", "public, max-age=" + maxAge)
-//                                .build();
-//                    } else {
-//                        //无网络时强制使用缓存数据
-//                        request.newBuilder()
-//                                .cacheControl(CacheControl.FORCE_CACHE)
-//                                .build();
-//                           var response:Response = chain.proceed(request);
-//                           var maxStale = 60 * 60 * 24 * 3;
-//                          response.newBuilder()
-//                                   .removeHeader("Pragma")
-//                                   .removeHeader("Cache-Control")
-//                                   .header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale)
-//                                   .build();
-//
-//
-//                    }
-//
-//                })
-                .setClientLogic(object:DefaultInterceptor(application){
-                    //httpcode过滤器
+                .setClientLogic(object: DefaultInterceptor(application){
                     override fun httpCodeMessage(code: Int): String {
                         return super.httpCodeMessage(code)
                     }
 
-                    //异常过滤器
-                    override fun handlerThrowable(e: Throwable?): HttpException {
-                        return super.handlerThrowable(e)
-                    }
-
-
-
-                    var gson: Gson =Gson();
-                    //请求结果过滤 定义status>200抛出请求异常
-                    override fun interceptor(response: Response?, json: String?): String {
+                    override fun interceptor(response: Response, json: String): String {
+                        var gson: Gson =Gson();
                         var errorBean = gson.fromJson(json, ErrorStatus::class.java)
                         if(errorBean.status!=200)throw HttpException(errorBean.status,errorBean.message);
                         return super.interceptor(response, json)
+                    }
+
+                    override fun handlerThrowable(e: Throwable): HttpException {
+                        return super.handlerThrowable(e)
                     }
                 })
                 .build();

@@ -9,7 +9,6 @@ import okio.Buffer
 import okio.BufferedSink
 import okio.Okio
 import okio.Source
-import org.lxz.utils.http.AsHttp.createCustomRequestBody
 import org.lxz.utils.log.D
 import java.io.File
 import java.io.IOException
@@ -18,9 +17,13 @@ import java.io.IOException
  * 默认OKHttpClient客户端
  * */
 var mOkHttpClient: OkHttpClient = OkHttpClient()
+
+
 fun initOkHttpClient(client: OkHttpClient) {
     mOkHttpClient = client
 }
+
+
 
 /**
  * 获得默认的OKHttpClient
@@ -136,8 +139,9 @@ private fun <T> createFrom(client: OkHttpClient, type: Class<T>, url: String, he
  * @param head http-head
  * @param body http-body
  * */
-fun <T> String.simpleMultipartForm(type: Class<T>, head: Map<Any?, Any?>, body: Map<Any?, Any?>): Observable<T>
+fun <T> String.simpleMultipartForm(type: Class<T>, head: Map<Any?, Any?>?, body: Map<Any?, Any?>?): Observable<T>
         = simpleMultipartForm(getOKHttpClient(),type,head,body)
+
 
 /**
  * 请求表单提交
@@ -145,7 +149,7 @@ fun <T> String.simpleMultipartForm(type: Class<T>, head: Map<Any?, Any?>, body: 
  * @param head http-head
  * @param body http-body
  * */
-fun <T> String.simpleMultipartForm(client: OkHttpClient, type: Class<T>, head: Map<Any?, Any?>, body: Map<Any?, Any?>): Observable<T>
+fun <T> String.simpleMultipartForm(client: OkHttpClient, type: Class<T>, head: Map<Any?, Any?>?, body: Map<Any?, Any?>?): Observable<T>
         = multipartBodyForm(client, type, this, {
     if (head != null) {
         var iterator = head.iterator();
@@ -166,7 +170,6 @@ fun <T> String.simpleMultipartForm(client: OkHttpClient, type: Class<T>, head: M
 
 
 fun <T> String.multipartForm(
-        client: OkHttpClient,
         type: Class<T>,
         head: (Request.Builder) -> Unit = onHead,
         body: (MultipartBody.Builder) -> Unit = onBody): Observable<T>
@@ -183,7 +186,6 @@ private fun <T> multipartBodyForm(client: OkHttpClient, type: Class<T>, url: Str
         var request: Request = requestBuild.method("POST", body).build()
 //        e.onNext()
         e.onComplete()
-        D.show(body.toString())
     }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 }
 
@@ -257,7 +259,7 @@ fun MultipartBody.Builder.addFileDataPart(type: MediaType, name: String, file: F
  * @param file 请求的文件
  * @param listener 文件处理进度
  * */
-private fun createCustomRequestBody(body: RequestBody, file: File, listener: FileProgressListener): RequestBody {
+private fun createCustomRequestBody(body: RequestBody, file: File, listener: (length: Long, progress: Long, isComple: Boolean) -> Unit): RequestBody {
     return object : RequestBody() {
 
         override fun contentType(): MediaType? {
@@ -280,7 +282,7 @@ private fun createCustomRequestBody(body: RequestBody, file: File, listener: Fil
                 while ((readCount == source.read(buf, 4098))) {
                     sink.write(buf, readCount)
                     remaining -= readCount;
-                    listener.onProgress(contentLength(), remaining, (remaining == 0L))
+                    listener.invoke(contentLength(),remaining,remaining==0L)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

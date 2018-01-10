@@ -4,15 +4,12 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import com.lxz.kotlin.tools.android.toast
-import com.lxz.kotlin.tools.http.bodyForm
-import com.lxz.kotlin.tools.http.initOkHttpClient
-import com.lxz.kotlin.tools.http.simpleMultipartForm
 import com.lxz.kotlin.tools.lang.asJsonFromat
 import com.lxz.kotlin.tools.android.idsOnClick
+import com.lxz.kotlin.tools.http.*
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.activity_okhttp.*
-import okhttp3.OkHttpClient
-import org.lxz.utils.http.AsHttpFactory
+import org.lxz.utils.log.D
 
 /**
  * Created by linxingzhu on 2017/11/28.
@@ -25,17 +22,17 @@ class OkHttpActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     fun request() {
-        var factory: AsHttpFactory = AsHttpFactory.Build()
-                .setHttpLog(AsHttpFactory.LogListen { log ->
-                    tv_msg.post {
-                        tv_msg.append("==========网络请求日志=======\n")
-                        tv_msg.append(log.message.toString().asJsonFromat());
-                        tv_msg.append("==========请求结果==========\n")
-                    }
-                })
-                .build();
-
-        initOkHttpClient(factory.okHttpClient)
+//        var factory: AsHttpFactory = AsHttpFactory.Build()
+//                .setHttpLog(AsHttpFactory.LogListen { log ->
+//                    tv_msg.post {
+//                        tv_msg.append("==========网络请求日志=======\n")
+//                        tv_msg.append(log.message.toString().asJsonFromat());
+//                        tv_msg.append("==========请求结果==========\n")
+//                    }
+//                })
+//                .build();
+//
+//        initOkHttpClient(factory.okHttpClient)
 
 
 //        "https://api.douban.com/v2/movie/top250?start1&count=2"
@@ -49,12 +46,24 @@ class OkHttpActivity : AppCompatActivity(), View.OnClickListener {
 //                        }
 //                )
         "https://api.douban.com/v2/movie/top250"
+        .bodyForm(
+                type = Data::class.java
+
+        ).subscribeBy(
+                onNext = {
+                    tv_msg.setText(it.asJsonFromat())
+                },
+                onError = {
+                    tv_msg.toast("请求失败")
+                }
+        )
+        "https://api.douban.com/v2/movie/top250"
                 .bodyForm(
                         type = Data::class.java
 
                 ).subscribeBy(
                 onNext = {
-                                        tv_msg.setText(it.asJsonFromat())
+                    tv_msg.setText(it.asJsonFromat())
                 },
                 onError = {
                     tv_msg.toast("请求失败")
@@ -63,25 +72,26 @@ class OkHttpActivity : AppCompatActivity(), View.OnClickListener {
 //
 
         "https://api.douban.com/v2/movie/top250"
+                .multipartForm<Data>(
+
+                        type = Data::class.java,
+
+                        body =  {
+
+                        }
+                ).subscribeBy(
+                onNext = {
+                    tv_msg.toast("请求成功: data.title= ${it.title}")
+                },
+                onError = {
+                    tv_msg.toast("请求失败" + it)
+                }
+        )
+        "https://api.douban.com/v2/movie/top250"
                 .simpleMultipartForm<Data>(
                        type = Data::class.java,
-                       head =  mapOf("key" to 24,"name" to "zhangsan","age" to 25)
-                        ,
+                       head =  mapOf(),
                        body =  mapOf("key" to 24,"name" to "zhangsan","age" to 25)
-//                        head = {
-//                            it.addHeader("authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjMzNDAzMzNCMkMifQ.eyJpc3MiOiIxNjdDNDNFQ0FCIiwiYXVkIjoiODMxRTEzM0Q1NiIsImp0aSI6IjMzNDAzMzNCMkMiLCJ1aWQiOiI1OGRiNzAwNmYyMWRhMDBlNWUzYjM1YjgifQ.t_596vfqs-HIWB5DlidzJ63uOyFbWSHD9ZU3BieVVr8")
-//
-//                        },
-//                        body = {
-//                            it.addFileDataPart(MEDIATYPE_FROM!!, "name", "name", File(""),
-//                                    {
-//                                        length, progress, comple ->
-//
-//
-//                                    }
-//                            )
-//
-//                        }
                 ).subscribeBy(
                 onNext = {
                     tv_msg.toast("请求成功: data.title= ${it.title}")
@@ -97,6 +107,7 @@ class OkHttpActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_okhttp)
         idsOnClick(this, R.id.btn_submit)
+        D.init(this)
 
     }
 

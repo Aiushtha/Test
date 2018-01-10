@@ -25,7 +25,7 @@ fun setClickIntervalTime(time:Long){
 }
 
 /***
- * 对一组控件id组指定onclick事件
+ * 对一组控件id组指定onclick事件 默认时间间隔为2秒
  * @param click 点击事件
  * @param ids 输入点击空间编号 如R.id.btn1,R.id.btn2.....
  */
@@ -40,6 +40,24 @@ fun Activity.idsOnClick(click:View.OnClickListener,vararg ids: Int): View.OnClic
 
     return click;
 }
+/***
+ * 对一组控件id组指定onclick事件
+ * @param click 点击事件
+ * @param intervalTime 点击事件间隔时间
+ * @param ids 输入点击空间编号 如R.id.btn1,R.id.btn2.....
+ */
+fun Activity.idsOnClick(click:View.OnClickListener,intervalTime:Long,timeUnit: TimeUnit,vararg ids: Int): View.OnClickListener {
+    for (id in ids)
+    {
+        var view=findViewById<View>(id);
+        RxView.clicks(findViewById<View>(id))
+                .throttleFirst(intervalTime,timeUnit)
+                .subscribe(Consumer<Any> { click.onClick(view) });
+    }
+
+    return click;
+}
+
 /***
  * 从view开始查找一组控件id  指定onclick事件
  * @param views 从指定的view开始
