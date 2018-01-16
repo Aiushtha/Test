@@ -202,7 +202,7 @@ class SqlActivity : AppCompatActivity(), View.OnClickListener {
             override fun onViewCreated(layout: View, savedInstanceState: Bundle?) {
                 super.onViewCreated(view, savedInstanceState)
 
-                sqlUser?.id.toString().run {tv_id.text=this}
+                sqlUser?.id?.toString().run {tv_id.text=this}
 
                 tv_birthday.setOnClickListener {
                     with(DatePickerDialog(activity)) {
