@@ -64,6 +64,8 @@ class PeopleActivity : AppCompatActivity() {
 
 
 
+
+
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -85,15 +87,15 @@ class PeopleActivity : AppCompatActivity() {
 //
 
 
-//        data.count(Person::class).get().single().subscribe { integer ->
-//            Toast.makeText(context,""+integer,Toast.LENGTH_SHORT).show()
-//            if (integer == 0) {
-//                Observable.fromCallable(CreatePeople(data))
-//                    .flatMap { o -> o }
-//                    .observeOn(Schedulers.computation())
-//                    .subscribe({ adapter.queryAsync() })
-//            }
-//        }
+        data.count(Person::class).get().single().subscribe { integer ->
+            Toast.makeText(context,""+integer,Toast.LENGTH_SHORT).show()
+            if (integer == 0) {
+                Observable.fromCallable(CreatePeople(data))
+                    .flatMap { o -> o }
+                    .observeOn(Schedulers.computation())
+                    .subscribe({ adapter.queryAsync() })
+            }
+        }
 
 
     }

@@ -9,6 +9,7 @@ import com.lxz.kotlin.tools.android.idsOnClick
 import com.lxz.kotlin.tools.http.*
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.activity_okhttp.*
+import okhttp3.OkHttpClient
 import org.lxz.utils.log.D
 
 /**
@@ -45,6 +46,25 @@ class OkHttpActivity : AppCompatActivity(), View.OnClickListener {
 //                            tv_msg.toast("请求失败" + it)
 //                        }
 //                )
+
+        OkHttpClient()
+                .http("https://api.douban.com/v2/movie/top250?start1&count=2")
+                .setHead(mapOf("1" to "2"))
+                .setBody(mapOf( "1" to "2"))
+                .setMultBodyBuild{}
+                .toObservable<String>(String.javaClass)
+                .subscribeBy {
+
+                }
+
+
+
+
+//        OkHttpClient().http<ShareActivity.User>(url = "")
+//                .asJsonFromat()
+
+
+
         "https://api.douban.com/v2/movie/top250"
         .bodyForm(
                 type = Data::class.java
@@ -77,7 +97,6 @@ class OkHttpActivity : AppCompatActivity(), View.OnClickListener {
                         type = Data::class.java,
 
                         body =  {
-
                         }
                 ).subscribeBy(
                 onNext = {

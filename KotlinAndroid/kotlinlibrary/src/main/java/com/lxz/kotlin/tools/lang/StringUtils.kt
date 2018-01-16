@@ -7,7 +7,6 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
 /**
- * @author 林星助
  * 常用字符串开发工具包
  */
 

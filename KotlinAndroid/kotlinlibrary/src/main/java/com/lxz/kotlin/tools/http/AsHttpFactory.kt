@@ -21,6 +21,14 @@ import kotlin.collections.HashMap
  */
 class AsHttpFactory internal constructor() {
 
+    open interface LogListen {
+        fun log(httpLog: AsHttpFactory.HttpLog)
+    }
+    open interface ClientBuilder {
+        fun build(build: OkHttpClient.Builder)
+    }
+
+
     var requestHashMap: HashMap<String, HttpLog> = HashMap<String, HttpLog>()
     var url = "http://127.0.0.1"
     var jPath: String? = null
@@ -71,10 +79,10 @@ class AsHttpFactory internal constructor() {
             var print: LinkedHashMap<String, Any> = LinkedHashMap()
 
             try {
-                var mediaType: MediaType? = response?.body()?.contentType()
-                val requestBody = if (response != null) response?.request()?.body() else request?.body()
+                var mediaType: MediaType? = response?.run { body()?.contentType()}
+                val requestBody :RequestBody?= if (response != null) response?.request()?.body() else request?.body()
                 val buffer = Buffer()
-                requestBody?.writeTo(buffer)
+                requestBody?.run {writeTo(buffer)}
                 val charset = Charset.forName("UTF-8")
                 val paramsStr = buffer.readString(charset)
                 var decParamsStr: String? = null
@@ -82,19 +90,19 @@ class AsHttpFactory internal constructor() {
                     decParamsStr = URLDecoder.decode(paramsStr, "UTF-8")
                 } catch (e: Exception) {
                 }
-                var postParams: MutableMap<String, String>? = null
-//                try {
-//                    val arr = decParamsStr!!.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-//                    postParams = HashMap()
-//                    for (str in arr) {
-//                        val keyValue = str.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-//                        val key = keyValue[0]
-//                        val value = keyValue[1]
-//                        postParams.put(key, value)
-//                    }
-//                } catch (e: Exception) {
-//                }
-
+                var postParams: MutableMap<String, String> = HashMap()
+                try {
+                    decParamsStr?.run {
+                        val arr = decParamsStr!!.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                        for (str in arr) {
+                            val keyValue = str.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                            val key = keyValue[0]
+                            val value = keyValue[1]
+                            postParams.put(key, value)
+                        }
+                    }
+                } catch (e: Exception) {
+                }
                 val url:String = if (response != null) response?.request()?.url().toString() else request?.url().toString()
                 print.put("id", number)
                 print.put("url", url)
@@ -117,7 +125,6 @@ class AsHttpFactory internal constructor() {
                     }
 
                 }
-
                 print.put("params", paramsStr?:"")
                 print.put("paramsDecode", postParams?:"")
 
@@ -152,24 +159,22 @@ class AsHttpFactory internal constructor() {
                     }
                     print.put("frombody", fromInfos)
                 }
-
-
                 print.put("code", code)
-                if(data!=null)print.put("data", data!!?:"")
+                data?.run {
+//                    print.put("data", data!!)
                     try {
                         val dataDecode = ascii2native(data)
-                        print.put("dataDecode", dataDecode!!)
+//                        print.put("dataDecode", dataDecode!!)
                         print.put("dataJsonDecode", Gson().fromJson(dataDecode, Map::class.java))
                     } catch (e: Exception) {
                     }
-
-                print.put("error", throwable!!.javaClass.simpleName + " " + throwable!!.message)
+                }
+                throwable?.run { print.put("error", throwable!!.javaClass.simpleName + " " + throwable!!.message) }
 
 
             } catch (e: IOException) {
 
             }
-//            message = Gson().toJson(print);
             return  Gson().toJson(print)
 
 
@@ -372,7 +377,9 @@ class AsHttpFactory internal constructor() {
                     buildHeads = Headers.of(heads!!)
                     build.headers(buildHeads)
                 }
-                response = chain.proceed(build.url(httpUrl).build())
+
+
+                response = chain?.proceed(build?.url(httpUrl)?.build())
 
                 httpLog = HttpLog(response!!.body()!!.source().buffer().sha1().hex())
                 httpLog.request = request
@@ -381,7 +388,7 @@ class AsHttpFactory internal constructor() {
                 httpLog.code = response.code()
                 requestHashMap.put(httpLog.number, HttpLog(httpLog.number))
 
-                if (response.code() != 200||response.code()!=0) {
+                if (response.code() != 200&&response.code()!=0) {
                     requestHashMap.remove(httpLog.number)
                      throw HttpException(httpLog.code, "http code")
                 }else

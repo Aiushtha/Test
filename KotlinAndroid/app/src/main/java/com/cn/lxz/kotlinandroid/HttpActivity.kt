@@ -102,8 +102,6 @@ class HttpActivity : AppCompatActivity(), View.OnClickListener {
                                 .removeHeader("Cache-Control")
                                 .header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale)
                                 .build();
-
-
                     }
 
                 })
@@ -126,10 +124,7 @@ class HttpActivity : AppCompatActivity(), View.OnClickListener {
                 .build();
         api = factory.retrofit.create(Api::class.java);
     }
-
-
-
-@SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission")
     fun isNetworkConnected(context:Context):Boolean{
            var mConnectivityManager:ConnectivityManager = context
                    .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager;
@@ -139,7 +134,6 @@ class HttpActivity : AppCompatActivity(), View.OnClickListener {
             }
         return false;
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
