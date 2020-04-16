@@ -21,10 +21,10 @@ import kotlin.collections.HashMap
  */
 class AsHttpFactory internal constructor() {
 
-    open interface LogListen {
+    interface LogListen {
         fun log(httpLog: AsHttpFactory.HttpLog)
     }
-    open interface ClientBuilder {
+    interface ClientBuilder {
         fun build(build: OkHttpClient.Builder)
     }
 
@@ -70,7 +70,7 @@ class AsHttpFactory internal constructor() {
                 }
 
             }
-            logListen!!.log(this)
+            logListen?.log(this)
 
         }
 
@@ -169,11 +169,13 @@ class AsHttpFactory internal constructor() {
                     } catch (e: Exception) {
                     }
                 }
-                throwable?.run { print.put("error", throwable!!.javaClass.simpleName + " " + throwable!!.message) }
+                throwable?.run {
+                    print.put("error",throwable!!.javaClass.simpleName+" "+throwable!!.message)
+                }
 
 
-            } catch (e: IOException) {
-
+            } catch (e: Exception) {
+                throw  RuntimeException(e);
             }
             return  Gson().toJson(print)
 
@@ -324,6 +326,8 @@ class AsHttpFactory internal constructor() {
         val build = OkHttpClient.Builder()
 
 
+
+
         if (interceptorList != null && !interceptorList!!.isEmpty()) {
             for (inter in interceptorList!!) {
                 build.addInterceptor(inter)
@@ -337,14 +341,13 @@ class AsHttpFactory internal constructor() {
         if (clientBuilder != null) {
             clientBuilder!!.build(build)
         }
+
         build.addInterceptor(netCacheInterceptor)
                 .connectTimeout(connectTimeout.toLong(), TimeUnit.MILLISECONDS)
                 .readTimeout(readTimeout.toLong(), TimeUnit.MILLISECONDS)
 
-
         return build.build()
     }
-
 
 
 
@@ -385,8 +388,10 @@ class AsHttpFactory internal constructor() {
                 httpLog.request = request
 
                 httpLog.response = response
+
                 httpLog.code = response.code()
                 requestHashMap.put(httpLog.number, HttpLog(httpLog.number))
+
 
                 if (response.code() != 200&&response.code()!=0) {
                     requestHashMap.remove(httpLog.number)
@@ -398,16 +403,18 @@ class AsHttpFactory internal constructor() {
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                requestHashMap.remove(httpLog!!.number)
-                httpLog.throwable = e
-                if (asHttpInterceptor != null) {
-                    val httpException = asHttpInterceptor!!.handlerThrowable(e)
-                    httpLog.throwable = httpException
-                    httpLog.handlerLog()
-                    throw httpException
-                } else {
-                    httpLog.handlerLog();
-                    throw e
+                httpLog?.run {
+                    requestHashMap.remove(httpLog!!.number)
+                    httpLog!!.throwable = e
+                    if (asHttpInterceptor != null) {
+                        val httpException = asHttpInterceptor!!.handlerThrowable(e)
+                        httpLog!!.throwable = httpException
+                        httpLog!!.handlerLog()
+                        throw httpException
+                    } else {
+                        httpLog!!.handlerLog();
+                        throw e
+                    }
                 }
 
             }
@@ -417,6 +424,7 @@ class AsHttpFactory internal constructor() {
 
         return netCacheInterceptor!!;
     }
+
 
 
     inner class ResponseConvertFactory(gson: Gson?) : Converter.Factory() {
@@ -437,10 +445,14 @@ class AsHttpFactory internal constructor() {
                 var httpLog: HttpLog? = null
                 if (value != null) {
                     httpLog = requestHashMap[sha1]
+
+
                 }
                 try {
                     val str = value.string()
                     httpLog!!.data = str
+
+                    Log.d("http","1")
                     if (asHttpInterceptor != null) {
                         val jsonResult = asHttpInterceptor!!.interceptor(httpLog!!.response!!, str)
                         return@Converter JPathGson.fromJson<Any>(jsonResult, jPath, type)
@@ -448,6 +460,9 @@ class AsHttpFactory internal constructor() {
                         return@Converter JPathGson.fromJson<Any>(str, jPath, type)
                     }
                 } catch (e: Exception) {
+                    e.stackTrace.forEach { e.printStackTrace() }
+
+
                     if (httpLog != null) {
                         httpLog.throwable = e
                     }

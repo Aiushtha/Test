@@ -3,10 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AsHttp/AsHttp.iml" filepath="$PROJECT_DIR$/AsHttp/AsHttp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GreatHouseKeeper/GreatHouseKeeper.iml" filepath="$PROJECT_DIR$/GreatHouseKeeper/GreatHouseKeeper.iml" />
       <module fileurl="file://$PROJECT_DIR$/KotlinAndroid.iml" filepath="$PROJECT_DIR$/KotlinAndroid.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/example-kotlin/example-kotlin.iml" filepath="$PROJECT_DIR$/example-kotlin/example-kotlin.iml" />
       <module fileurl="file://$PROJECT_DIR$/kotlinlibrary/kotlinlibrary.iml" filepath="$PROJECT_DIR$/kotlinlibrary/kotlinlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test/test.iml" filepath="$PROJECT_DIR$/test/test.iml" />
     </modules>
   </component>
 </project>

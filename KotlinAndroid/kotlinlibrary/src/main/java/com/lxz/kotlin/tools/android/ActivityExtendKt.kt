@@ -24,6 +24,7 @@ fun setClickIntervalTime(time:Long){
     clickIntervalTime =time;
 }
 
+
 /***
  * 对一组控件id组指定onclick事件 默认时间间隔为2秒
  * @param click 点击事件
@@ -32,10 +33,21 @@ fun setClickIntervalTime(time:Long){
 fun Activity.idsOnClick(click:View.OnClickListener,vararg ids: Int): View.OnClickListener {
     for (id in ids)
     {
-       var view=findViewById<View>(id);
-       RxView.clicks(findViewById<View>(id))
+       var view=findViewById(id);
+       RxView.clicks(findViewById(id))
                .throttleFirst(clickIntervalTime,TimeUnit.SECONDS)
                .subscribe(Consumer<Any> { click.onClick(view) });
+    }
+
+    return click;
+}
+
+fun Activity.idsOnClick(click:View.OnClickListener,vararg ids: View): View.OnClickListener {
+    for (view in ids)
+    {
+        RxView.clicks(view)
+                .throttleFirst(clickIntervalTime,TimeUnit.SECONDS)
+                .subscribe(Consumer<Any> { click.onClick(view) });
     }
 
     return click;
@@ -50,7 +62,17 @@ fun Activity.idsOnClick(click:View.OnClickListener,intervalTime:Long,timeUnit: T
     for (id in ids)
     {
         var view=findViewById<View>(id);
-        RxView.clicks(findViewById<View>(id))
+        RxView.clicks(findViewById<View>((id))
+                .throttleFirst(intervalTime,timeUnit)
+                .subscribe(Consumer<Any> { click.onClick(view) });
+    }
+
+    return click;
+}
+fun Activity.idsOnClick(click:View.OnClickListener,intervalTime:Long,timeUnit: TimeUnit,vararg ids: View): View.OnClickListener {
+    for (view in ids)
+    {
+        RxView.clicks(view)
                 .throttleFirst(intervalTime,timeUnit)
                 .subscribe(Consumer<Any> { click.onClick(view) });
     }
@@ -66,7 +88,7 @@ fun Activity.idsOnClick(click:View.OnClickListener,intervalTime:Long,timeUnit: T
 fun View.OnClickListener.viewOnClick(views:View,vararg ids: Int){
     for (id in ids)
     {
-        var view=views.findViewById<View>(id);
+        var view=views.findViewById(id);
         RxView.clicks(view)
                 .throttleFirst(clickIntervalTime,TimeUnit.SECONDS)
                 .subscribe(Consumer<Any> { this.onClick(view) });
@@ -77,5 +99,6 @@ fun View.OnClickListener.viewOnClick(views:View,vararg ids: Int){
  * 弹出一个Toast框
  * @param toast 传入字符串
  */
-fun Activity.toast(str: String)= Toast.makeText(this, str, Toast.LENGTH_SHORT).show()
+//fun Activity.toast(str: String)= Toast.makeText(this, str, Toast.LENGTH_SHORT).show()
 
+fun Activity.toast(obj: Any)= Toast.makeText(this, obj.toString(), Toast.LENGTH_SHORT).show()

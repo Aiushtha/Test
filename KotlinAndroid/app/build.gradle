@@ -1,26 +1,70 @@
 apply plugin: 'com.android.application'
-
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-android-extensions'
-
-apply plugin: 'org.jetbrains.dokka'
-
-//apply plugin: 'org.jetbrains.dokka-android'
-
+apply plugin: 'kotlin-kapt'
 kapt {
     generateStubs = true
 }
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion rootProject.ext.COMPILE_SDK_VERSION
+    buildToolsVersion rootProject.ext.BUILD_TOOLS_VERSION
+    flavorDimensions "color"
     defaultConfig {
-        applicationId 'com.cn.lxz.kotlinandroid'
-        minSdkVersion 15
-        targetSdkVersion 26
+        applicationId "com.cn.zlh.dgj.worker"
+        minSdkVersion rootProject.ext.MIN_SDK_VERSION
+        targetSdkVersion rootProject.ext.TARGET_SDK_VERSION
         versionCode 1
         versionName "1.0"
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+        dimension "color"
+        buildConfigField "boolean", "Debug_API", "true"
+        buildConfigField "boolean", "SHOW_LOG", "true"
+        buildConfigField "boolean", "Debug_DATA", "true"
+        buildConfigField "String", "BaseUrl", "\"http://testapi.xqafu.com:81\""
+        buildConfigField "String", "cookieUrl", "\"http://test.m.xqafu.com:81\""
+        manifestPlaceholders.put("UMENG_CHANNEL","google")
+        buildConfigField "String", "DefaultFristActivity", "\"com.cn.zlh.dgj.worker.TestUnitActivity\""
+
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+    }
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+    productFlavors {
+        MyDefault {
+            dimension "color"
+            buildConfigField "boolean", "Debug_API", "true"
+            buildConfigField "boolean", "SHOW_LOG", "true"
+            buildConfigField "boolean", "Debug_DATA", "true"
+            buildConfigField "String", "BaseUrl", "\"http://testapi.xqafu.com:81\""
+            buildConfigField "String", "DefaultFristActivity", "\"com.cn.zlh.dgj.worker.TestUnitActivity\""
+        }
+        测试环境 {
+            dimension "color"
+            buildConfigField "boolean", "Debug_API", "true"
+            buildConfigField "boolean", "SHOW_LOG", "true"
+            buildConfigField "boolean", "Debug_DATA", "true"
+            buildConfigField "String", "BaseUrl", "\"http://testapi.xqafu.com:81\""
+            buildConfigField "String", "DefaultFristActivity", "\"com.cn.zlh.dgj.worker.LoginActivity\""
+        }
+        生产环境 {
+            dimension "color"
+            buildConfigField "boolean", "Debug_API", "false"
+            buildConfigField "boolean", "SHOW_LOG", "false"
+            buildConfigField "boolean", "Debug_DATA", "false"
+            buildConfigField "String", "BaseUrl", "\"http://api.xqafu.com\""
+            buildConfigField "String", "cookieUrl", "\"http://m.xqafu.com\""
+            buildConfigField "String", "DefaultFristActivity", "\"com.cn.zlh.dgj.worker.LoginActivity\""
+        }
     }
     buildTypes {
         release {
@@ -28,78 +72,50 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    lintOptions {
-        abortOnError false
+    compileOptions {
     }
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
-    productFlavors {
-    }
+
 }
 
+
+/***
+ * 预防以下错误
+ * Failed to resolve: com.android.support:support-annotations:26.0.2
+ * **/
+configurations.all {
+    resolutionStrategy.force 'com.android.support:support-annotations:23.1.0'
+}
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    implementation parent.ext.libs.appcompat
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation 'com.android.support:design:26.1.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-//    compile 'com.jakewharton:kotterknife:0.1.0-SNAPSHOT'
-    implementation 'io.reactivex.rxjava2:rxkotlin:2.1.0'
-    implementation 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
-    implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
-    implementation project(':AsHttp')
-//    implementation 'com.android.support:recyclerview-v7:26+'
-//    implementation 'io.requery:requery:1.3.0'
-//    implementation 'io.requery:requery-android:1.3.0'
-//    implementation 'io.requery:requery-kotlin:1.3.0'
-    kapt 'io.requery:requery-processor:1.3.0'
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    /*/*/
+    def libs = parent.ext.libs
+    /*/*/
+    compile libs.appcompat
+    compile libs.supportDesign
+    compile libs.supportAnnotation
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    //    compile 'com.jakewharton:kotterknife:0.1.0-SNAPSHOT'
+    compile 'io.reactivex.rxjava2:rxkotlin:2.1.0'
+    compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
+    compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
+    compile project(':AsHttp')
     compile project(':kotlinlibrary')
     compile 'io.reactivex.rxjava2:rxjava:2.0.5'
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    compile 'io.requery:requery:1.3.0'
-    compile 'io.requery:requery-android:1.3.0'
-    compile 'io.requery:requery-kotlin:1.3.0'
-
+    //===requery===
+    compile 'io.requery:requery:1.5.0'
+    compile 'io.requery:requery-kotlin:1.5.0'
+    compile 'io.requery:requery-android:1.5.0'
+    kapt 'io.requery:requery-processor:1.5.0'
+    //------------------
+    compile 'com.trello.rxlifecycle2:rxlifecycle-kotlin:2.2.1'
+    compile 'com.trello.rxlifecycle2:rxlifecycle-android-lifecycle-kotlin:2.2.1'
+    compile project(':autolayout')
 }
-
-
 repositories {
     maven {
-        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+        url 'https://dl.google.com/dl/android/maven2/'
+        // Alternative URL is 'https://dl.google.com/dl/android/maven2/'
     }
-    maven { url 'https://jitpack.io' }
-}
-
-
-
-
-task generateSourcesJar(type: Jar) {
-    group = 'jar'
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-
-task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
-    outputFormat = "javadoc"
-    outputDirectory = javadoc.destinationDir
-}
-
-task generateJavadoc(type: Jar, dependsOn: dokkaJavadoc) {
-    group = 'jar'
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives generateJavadoc
-    archives generateSourcesJar
 }

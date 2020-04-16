@@ -5,6 +5,9 @@ import android.content.SharedPreferences
 import com.google.gson.Gson
 import org.lxz.utils.share.DataShare
 
+
+
+
 /**
  * 初始化简单存储
  * @param app androidApplication
@@ -63,13 +66,13 @@ fun Boolean?.saveInkey(key:String?)= DataShare.put(key,this)
 /**从指定的非空key值返回保存的字符串*/
 fun String?.getStoreString():String?= DataShare.getString(this)
 /**从指定的非空key值返回保存的整数*/
-fun String?.getStoreInt():Int?= DataShare.getInt(this)
+fun String?.getStoreInt():Int= DataShare.getInt(this)
 /**从指定的非空key值返回保存的Float*/
-fun String?.getStoreFloat():Float?= DataShare.getFloat(this)
+fun String?.getStoreFloat():Float= DataShare.getFloat(this)
 /**从指定的非空key值返回保存的Long*/
-fun String?.getStoreLong():Long?= DataShare.getLong(this)
+fun String?.getStoreLong():Long= DataShare.getLong(this)
 /**从指定的非空key值返回保存的Boolean*/
-fun String?.getStoreBoolean():Boolean?= DataShare.getBoolean(this)
+fun String?.getStoreBoolean():Boolean= DataShare.getBoolean(this)
 /**已指定的key值保存值*/
 fun String?.saveAsJsonBean(value:Any?):Any?=DataShare.saveJsonObject(this,value)
 /**已指定key值以json转换为已指定的类型*/

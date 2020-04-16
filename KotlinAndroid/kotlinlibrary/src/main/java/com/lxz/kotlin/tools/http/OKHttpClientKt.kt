@@ -42,8 +42,8 @@ class Http(val httpClient:OkHttpClient,val url: String?){
 
             var requestBuild = Request.Builder().url(url)
 
-            headMap?.iterator()?.forEach { (key,value) -> bodyBuild }
-            bodyMap?.iterator()?.forEach { (key, value) -> requestBuild.addHeader(key.toString(),value.toString());}
+            headMap?.iterator()?.forEach { (key,value) -> requestBuild.addHeader(key.toString(),value.toString()) }
+            bodyMap?.iterator()?.forEach { (key, value) -> bodyBuild.addFormDataPart(key.toString(),value.toString())}
             multBodyBuild?.invoke(bodyBuild)
 
             var body = bodyBuild.build();

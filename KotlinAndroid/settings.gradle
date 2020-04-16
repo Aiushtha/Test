@@ -1,1 +1,2 @@
-include ':app', ':AsHttp', ':example-kotlin', ':kotlinlibrary'
+include ':test', ':AsHttp', ':kotlinlibrary'
+//include ':test', ':AsHttp', ':kotlinlibrary', ':autolayout', ':app'

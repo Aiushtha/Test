@@ -102,7 +102,7 @@ fun <T> String.bodyForm(
         type: Class<T>,
         head: (Request.Builder) -> Unit = onHead,
         body: (FormBody.Builder) -> Unit = onBody): Observable<T>
-        = createFrom((if (client == null) getOKHttpClient() else client), type, this, head, body)
+        = createFrom(getOKHttpClient(), type, this, head, body)
 
 /**
  * 创建一个表单
@@ -170,7 +170,7 @@ fun <T> String.multipartForm(
         type: Class<T>,
         head: (Request.Builder) -> Unit = onHead,
         body: (MultipartBody.Builder) -> Unit = onBody): Observable<T>
-        = multipartBodyForm((if (getOKHttpClient() == null) OkHttpClient() else getOKHttpClient()), type, this, head, body)
+        = multipartBodyForm( getOKHttpClient(), type, this, head, body)
 
 private fun <T> multipartBodyForm(client: OkHttpClient, type: Class<T>, url: String, head: (Request.Builder) -> Unit, body: (MultipartBody.Builder) -> Unit): Observable<T> {
     return Observable.create<T> { e ->
@@ -187,6 +187,7 @@ private fun <T> multipartBodyForm(client: OkHttpClient, type: Class<T>, url: Str
         e.onComplete()
     }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 }
+
 
 
 /**

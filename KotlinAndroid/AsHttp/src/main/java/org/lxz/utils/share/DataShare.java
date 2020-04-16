@@ -9,6 +9,13 @@ import com.google.gson.Gson;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
+import io.reactivex.functions.Function;
 
 public class DataShare {
     private static String filename = "DataObject";
@@ -67,6 +74,7 @@ public class DataShare {
     public static boolean saveJsonObject(final Object obj) {
 
         try {
+
             map.put(obj.getClass(), obj);
             getInstance().share.put(obj.getClass().getName(),
                     new Gson().toJson(obj));
@@ -89,6 +97,7 @@ public class DataShare {
     public static <T> T getJsonObject(Class<T> cls) {
 
         try {
+
             Object obj = map.get(cls);
             if (obj != null) return (T) obj;
             String content = getInstance().share.getString(cls.getName());
@@ -98,6 +107,44 @@ public class DataShare {
         }
         return null;
     }
+
+    public static <T> Observable<T> getJsonObjectObservable(final Class<T> cls) {
+        return Observable.defer(new Callable<ObservableSource<? extends T>>() {
+            @Override
+            public ObservableSource<? extends T> call() throws Exception {
+                return Observable.create(new ObservableOnSubscribe<T>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<T> e) throws Exception {
+                        Object obj = map.get(cls);
+                        if (obj != null) {
+                            e.onNext((T) obj);
+                        }else {
+                            String content = getInstance().share.getString(cls.getName());
+                            if (content != null) {
+                                obj = new Gson().fromJson(content, cls);
+                                if (obj != null) {
+                                    e.onNext(new Gson().fromJson(content, cls));
+                                } else {
+                                    e.onError(new NullPointerException(cls.getName()));
+                                }
+                            } else {
+                                e.onError(new NullPointerException(cls.getName()));
+                            }
+                        }
+
+                        e.onComplete();
+                    }
+
+
+                });
+
+            }
+        });
+
+
+    }
+
+
 
     public static boolean clean(Class cls) {
         map.remove(cls);
@@ -142,7 +189,7 @@ public class DataShare {
     }
 
     public static boolean getBoolean(String key) {
-        return getInstance().share.getBoolean(key);
+        return getInstance().share.getBoolean(key,false);
     }
 
     public static boolean getBoolean(String key, Boolean defaultvalue) {
@@ -159,7 +206,7 @@ public class DataShare {
     }
 
     public static float getFloat(String key) {
-        return getInstance().share.getFloat(key);
+        return getInstance().share.getFloat(key,0);
     }
 
     public static float getFloat(String key, float defaultvalue) {

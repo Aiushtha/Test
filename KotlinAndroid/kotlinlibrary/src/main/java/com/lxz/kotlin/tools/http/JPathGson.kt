@@ -28,7 +28,11 @@ object JPathGson {
         if (jpath == null) {
             return getGson().fromJson<T>(json, cla)
         } else {
-            nodeJson = JsonPath.parse(json).read(jpath)
+            try {
+                nodeJson = JsonPath.parse(json).read(jpath)
+            } finally {
+
+            }
         }
         return getGson().fromJson<T>(getGson().toJson(nodeJson), cla)
     }
